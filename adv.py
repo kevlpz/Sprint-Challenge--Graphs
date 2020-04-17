@@ -8,6 +8,18 @@ from ast import literal_eval
 # Load world
 world = World()
 
+class Stack():
+    def __init__(self):
+        self.stack = []
+    def push(self, value):
+        self.stack.append(value)
+    def pop(self):
+        if self.size() > 0:
+            return self.stack.pop()
+        else:
+            return None
+    def size(self):
+        return len(self.stack)
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
@@ -29,7 +41,44 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+def get_opposite_direction(direction):
+    if direction == 'n':
+        return 's'
+    elif direction == 's':
+        return 'n'
+    elif direction == 'e':
+        return 'w'
+    elif direction == 'w':
+        return 'e'
 
+def traverse_maze(graph):
+    stack = Stack()
+    path = []
+    visited = {}
+    unexplored = {}
+
+    while len(visited) < len(room_graph):
+        if len(visited) == 0:
+            visited[player.current_room.id] = player.current_room.get_exits()
+            unexplored[player.current_room.id] = player.current_room.get_exits()
+
+        if player.current_room.id not in visited:
+            visited[player.current_room.id] = player.current_room.get_exits()
+            unexplored[player.current_room.id] = player.current_room.get_exits()
+
+        while len(unexplored[player.current_room.id]) < 1:
+            opposite_direction = stack.pop()
+            path.append(opposite_direction)
+            player.travel(opposite_direction)
+
+        direction = unexplored[player.current_room.id].pop()
+        path.append(direction)
+        stack.push(get_opposite_direction(direction))
+        player.travel(direction)
+
+    return path
+
+traversal_path.extend(traverse_maze(room_graph))
 
 # TRAVERSAL TEST
 visited_rooms = set()
